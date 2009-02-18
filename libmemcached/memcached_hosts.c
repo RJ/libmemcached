@@ -157,7 +157,7 @@ memcached_return update_continuum(memcached_st *ptr)
     if (is_ketama_weighted) 
     {
         float pct = (float)list[host_index].weight / (float)total_weight;
-        pointer_per_server= floorf(pct * MEMCACHED_POINTS_PER_SERVER_KETAMA / 4 * (float)(ptr->number_of_hosts) + 0.0000000001) * 4;
+        pointer_per_server= floorf(pct * MEMCACHED_POINTS_PER_SERVER_KETAMA * (float)(ptr->number_of_hosts));
         pointer_per_hash= 4;
 #ifdef HAVE_DEBUG
         printf("ketama_weighted:%s|%d|%llu|%u\n", 
@@ -172,17 +172,9 @@ memcached_return update_continuum(memcached_st *ptr)
       char sort_host[MEMCACHED_MAX_HOST_SORT_LENGTH]= "";
       size_t sort_host_length;
 
-      if (list[host_index].port == MEMCACHED_DEFAULT_PORT)
-      {
-        sort_host_length= snprintf(sort_host, MEMCACHED_MAX_HOST_SORT_LENGTH, "%s-%d", 
-                                   list[host_index].hostname, index - 1);
+      sort_host_length= snprintf(sort_host, MEMCACHED_MAX_HOST_SORT_LENGTH, "%s:%d-%d", 
+                                 list[host_index].hostname, list[host_index].port, index - 1);
 
-      }
-      else
-      {
-        sort_host_length= snprintf(sort_host, MEMCACHED_MAX_HOST_SORT_LENGTH, "%s:%d-%d", 
-                                   list[host_index].hostname, list[host_index].port, index - 1);
-      }
       WATCHPOINT_ASSERT(sort_host_length);
 
       if (is_ketama_weighted)
